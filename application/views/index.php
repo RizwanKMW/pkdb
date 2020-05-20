@@ -51,6 +51,9 @@
       border: 2px solid #ab65c7;
       border-radius: 5px;
     }
+    .card-link{
+      font-size: 22px;
+    }
     </style>
   </head>
   <body>
@@ -111,8 +114,41 @@
             tinymce.init({
             height : "380",
             selector: '#code',  
-            plugins: "anchor,lists,image,link,hr,table,codesample",
-             toolbar: 'removeformat codesample| bold hr| alignleft aligncenter alignright|link| numlist bullist forecolor backcolor h1 h5  fontsizeselect table ', 
+            plugins: "anchor,lists,image code,link,hr,table,codesample",
+            toolbar: 'image code |removeformat codesample| bold hr| alignleft aligncenter alignright|link| numlist bullist forecolor backcolor h1 h5  fontsizeselect table ', 
+            images_upload_url: "<?php echo base_url()?>pkdb/upload_image",
+            // override default upload handler to simulate successful upload    
+            images_upload_handler: function (blobInfo, success, failure) {
+                var xhr, formData;
+              
+                xhr = new XMLHttpRequest();
+                xhr.withCredentials = false;
+                xhr.open('POST', 'upload.php');
+              
+                xhr.onload = function() {
+                    var json;
+                
+                    if (xhr.status != 200) {
+                        failure('HTTP Error: ' + xhr.status);
+                        return;
+                    }
+                
+                    json = JSON.parse(xhr.responseText);
+                
+                    if (!json || typeof json.location != 'string') {
+                        failure('Invalid JSON: ' + xhr.responseText);
+                        return;
+                    }
+                
+                    success(json.location);
+                };
+              
+                formData = new FormData();
+                formData.append('file', blobInfo.blob(), blobInfo.filename());
+              
+                xhr.send(formData);
+            },
+
              setup: function(ed) {
               ed.on('keydown', function(event) {
                   if (event.keyCode == 9) { // tab pressed
@@ -173,12 +209,46 @@
           </div>              
           <div class="form-group">
            <textarea id="code_u" rows="20" name="code"></textarea>
-          <script>
+           <script>
             tinymce.init({
             height : "380",
             selector: '#code_u',  
-            plugins: "anchor,lists,image,link,hr,table,codesample",
-             toolbar: 'removeformat codesample| bold hr| alignleft aligncenter alignright|link| numlist bullist forecolor backcolor h1 h5  fontsizeselect table ', 
+            plugins: "anchor,lists,image code,link,hr,table,codesample",
+            toolbar: 'image code |removeformat codesample| bold hr| alignleft aligncenter alignright|link| numlist bullist forecolor backcolor h1 h5  fontsizeselect table ', 
+            images_upload_url : 'upload.php',
+            automatic_uploads : false,
+
+            images_upload_handler : function(blobInfo, success, failure) {
+              var xhr, formData;
+
+              xhr = new XMLHttpRequest();
+              xhr.withCredentials = false;
+              xhr.open('POST', 'upload.php');
+
+              xhr.onload = function() {
+                var json;
+
+                if (xhr.status != 200) {
+                  failure('HTTP Error: ' + xhr.status);
+                  return;
+                }
+
+                json = JSON.parse(xhr.responseText);
+
+                if (!json || typeof json.file_path != 'string') {
+                  failure('Invalid JSON: ' + xhr.responseText);
+                  return;
+                }
+
+                success(json.file_path);
+              };
+
+              formData = new FormData();
+              formData.append('file', blobInfo.blob(), blobInfo.filename());
+
+              xhr.send(formData);
+            },
+
              setup: function(ed) {
               ed.on('keydown', function(event) {
                   if (event.keyCode == 9) { // tab pressed
@@ -231,12 +301,12 @@
 
     <div class="bg-success">
       <a class="" href="index.php" style="cursor: help; text-decoration: none;">
-        <p class="text-white text-center headings" style="margin-bottom: 0px;">PK</p>
+        <p class="text-white text-center headings" style="margin-bottom: 0px;">RIZIKMW</p>
       </a>
     </div>
     <!-- nav bar -->
     <nav class="navbar navbar-expand-lg navigation">
-      <a class="navbar-brand" href="javascript:void(0)"><img src="assets/images/logo.png" width="50px" height="50px" /></a>
+      <a class="navbar-brand" href="javascript:void(0)"><img src="assets/images/logo.png"  height="60px" /></a>
       <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navb">
       <span class="navbar-toggler-icon"></span>
       </button>
@@ -250,7 +320,7 @@
           </li>
 
           <li class="nav-item">
-            <a class="nav-link disabled" href="javascript:void(0)">admin</a>
+            <a href="javascript:void(0)" class="nav-link" id="open_all_accordians">open all</a>
           </li>
         </ul>
         <form class="form-inline my-2 my-lg-0">
@@ -259,35 +329,14 @@
         </form>
       </div>
     </nav>
-    <!-- nav 2-->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-	  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
-	    <span class="navbar-toggler-icon"></span>
-	  </button>
-	  <div class="collapse navbar-collapse" id="navbarNavDropdown">
-	    <ul class="navbar-nav">
-	      <li class="nav-item active">
-	        <a href="<?php echo base_url()?>pkdb/links" class="btn btn-sm btn-info">Links</a>  
-	      </li>
-	      <li class="nav-item"><a href="<?php echo base_url()?>pkdb/bootstrap4cheetsheet" class="btn btn-sm btn-info">BS4 Cheetsheet</a>  </li>
-	      <li class="nav-item"><a href="<?php echo base_url()?>pkdb/JqueryCheatSheat" class="btn btn-sm btn-info">Jquery Cheetsheet</a> </li>
-	      <li class="nav-item"><a href="<?php echo base_url()?>pkdb/phpCheetSheat" class="btn btn-sm btn-info">PHP Cheetsheet</a></li>
-	      <li class="nav-item"><a href="<?php echo base_url()?>pkdb/JqueryCheatSheat" class="btn btn-sm btn-info">HTML Cheetsheet</a></li>
-	      <li class="nav-item"><a href="<?php echo base_url()?>pkdb/javascriptCheatSheat" class="btn btn-sm btn-info">JS Cheetsheet</a></li>
-	      <li class="nav-item"><a href="<?php echo base_url()?>pkdb/tutorialcheatsheet" class="btn btn-sm btn-info">Tutorials Cheetsheet</a></li>
-	      <li class="nav-item"><a href="https://www.w3schools.com/w3css/w3css_modal.asp" class="btn btn-sm btn-info">W3CSS FRAMEWORK</a></li>
-	      <li class="nav-item"><a href="<?php echo base_url()?>pkdb/wordpressCheatSheat" class="btn btn-sm btn-info">WORDPRESS</a></li>
-
-	    </ul>
-	  </div>
-	</nav>
-    <!-- ############secondary############-->
+    <!-- nav bar   -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
 	  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown2" aria-controls="navbarNavDropdown2" aria-expanded="false" aria-label="Toggle navigation">
 	    <span class="navbar-toggler-icon"></span>
 	  </button>
 	  <div class="collapse navbar-collapse" id="navbarNavDropdown2">
 	    <ul class="navbar-nav">
+	    	<li class="nav-item"><a href="<?php echo base_url()?>pkdb/bootstrap4cheetsheet" class="nav-link">BS4 Cheetsheet</a>  </li>
 			<?php
 		        if(!empty($categories_data)){
 		          foreach($categories_data as $row){
@@ -314,10 +363,12 @@
               <div id="accordion">
                 <?php
                  if(!empty($code_data)){
+                  
                   foreach($code_data as $row){
                 ?>
                <div class="card">
                   <div class="card-header">
+
                     <a class="card-link" style="display: block;display: block;float: left;width: 80%;" data-toggle="collapse" href="#id_<?php echo $row['id']?>">
                       <?php echo $row['title']?>
                     </a>
@@ -406,7 +457,11 @@
      });
 
 
-          
+      $(function() {
+        $('#open_all_accordians').on('click', function(e) {
+        $('#accordion .collapse').toggleClass('show');
+      })
+    });
          
     });
   </script>  

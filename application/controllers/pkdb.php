@@ -328,7 +328,7 @@ class pkdb extends CI_Controller {
 
        //Javascript
     public function javascriptCheatSheat(){
-        $query=$this->db->query("SELECT * FROM javascriptcheatsheat  ORDER BY category,id");
+        $query=$this->db->query("SELECT * FROM javascriptcheatsheat  ORDER BY id");
         $data['arrayData']=$query->result_array();
         $this->load->view('javascriptcheatsheat',$data);
     }

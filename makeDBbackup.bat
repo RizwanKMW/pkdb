@@ -1,1 +1,0 @@
-mysqldump --databases --user=root --password= pkdb > pkdb.sql

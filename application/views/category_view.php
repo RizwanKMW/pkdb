@@ -4,9 +4,9 @@
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Tutorials</title>
+    <title><?php if(!empty($categories_data)){        
+      echo $categories_data['title'];}?> </title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <link href="<?php echo base_url()?>assets/rainbowSyntaxHiglighter/rainbow.css" rel="stylesheet" type="text/css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
@@ -37,6 +37,15 @@
     .card-header {
       padding: .05rem 1.25rem;
     }
+    pre{
+      background: #f5f2f0;
+      padding: 1em;
+      margin: .5em 0;
+      overflow: auto;
+    }
+    .card-link{
+      font-size: 22px;
+    }
     </style>
   </head>
   <body>
@@ -54,12 +63,45 @@
           </div>              
           <div class="form-group">
            <textarea id="code" rows="20" name="code" spellcheck="true"></textarea>
-          <script>
+            <script>
             tinymce.init({
             height : "380",
             selector: '#code',  
-            plugins: "anchor,lists,image,link,hr,table,codesample",
-             toolbar: 'removeformat codesample| bold hr| alignleft aligncenter alignright|link| numlist bullist forecolor backcolor h1 h5  fontsizeselect table ', 
+            plugins: "anchor,lists,image code,link,hr,table,codesample",
+            toolbar: 'image code |removeformat codesample| bold hr| alignleft aligncenter alignright|link| numlist bullist forecolor backcolor h1 h5  fontsizeselect table ', 
+            images_upload_url: 'upload.php',
+            // override default upload handler to simulate successful upload    
+            images_upload_handler: function (blobInfo, success, failure) {
+                var xhr, formData;
+              
+                xhr = new XMLHttpRequest();
+                xhr.withCredentials = false;
+                xhr.open('POST', 'upload.php');
+              
+                xhr.onload = function() {
+                    var json;
+                
+                    if (xhr.status != 200) {
+                        failure('HTTP Error: ' + xhr.status);
+                        return;
+                    }
+                
+                    json = JSON.parse(xhr.responseText);
+                
+                    if (!json || typeof json.location != 'string') {
+                        failure('Invalid JSON: ' + xhr.responseText);
+                        return;
+                    }
+                
+                    success(json.location);
+                };
+              
+                formData = new FormData();
+                formData.append('file', blobInfo.blob(), blobInfo.filename());
+              
+                xhr.send(formData);
+            },
+
              setup: function(ed) {
               ed.on('keydown', function(event) {
                   if (event.keyCode == 9) { // tab pressed
@@ -90,8 +132,14 @@
               </div>
            <div class="form-group">
             <label for="sel1">Tags:</label>
-            
-            <input type="text" class="tag_in" maxlength="32"/>
+             <?php
+                    if(!empty($categories_data)){
+                    ?>
+                    <input type="text" value="<?php echo $categories_data['title']?>" class="tag_in" maxlength="32"/>
+                    
+                <?php
+                  }
+                ?>
             <span class="tag_list">
               <!-- <span class="tag">xyz</span> will be produced using javascript assets/3b-tag.js -->
             </span>
@@ -180,14 +228,14 @@
 
     <div class="bg-success">
       <a class="" href="index.php" style="cursor: help; text-decoration: none;">
-        <p class="text-white text-center headings" style="margin-bottom: 0px;">PK</p>
+        <p class="text-white text-center headings" style="margin-bottom: 0px;">RIZIKMW</p>
       </a>
     </div>
 
 
     <!-- nav bar -->
     <nav class="navbar navbar-expand-lg navigation">
-      <a class="navbar-brand" href="<?php echo base_url()?>"><img src="<?php echo base_url()?>assets/images/logo.png" width="50px" height="50px" /></a>
+      <a class="navbar-brand" href="<?php echo base_url()?>"><img src="<?php echo base_url()?>assets/images/logo.png"  height="60px" /></a>
       <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navb">
       <span class="navbar-toggler-icon"></span>
       </button>
@@ -198,7 +246,7 @@
           </li>
 
           <li class="nav-item">
-            <a class="nav-link disabled" href="javascript:void(0)">admin</a>
+            <a href="javascript:void(0)" class="nav-link" id="open_all_accordians">open all</a>
           </li>
         </ul>
         <form class="form-inline my-2 my-lg-0">
@@ -309,8 +357,12 @@
         }
        });
      });
-
-
+      
+      $(function() {
+        $('#open_all_accordians').on('click', function(e) {
+        $('#accordion .collapse').toggleClass('show');
+      })
+    });  
           
          
     });
